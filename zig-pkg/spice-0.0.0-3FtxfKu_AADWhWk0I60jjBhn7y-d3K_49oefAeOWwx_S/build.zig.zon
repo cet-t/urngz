@@ -1,0 +1,33 @@
+.{
+    .name = .spice,
+    .fingerprint = 0x276190827c715bdc,
+
+    // This is a [Semantic Version](https://semver.org/).
+    // In a future version of Zig it will be used for package deduplication.
+    .version = "0.0.0",
+
+    // This field is optional.
+    // This is currently advisory only; Zig does not yet do anything
+    // with this value.
+    //.minimum_zig_version = "0.11.0",
+
+    // This field is optional.
+    // Each dependency must either provide a `url` and `hash`, or a `path`.
+    // `zig build --fetch` can be used to fetch all dependencies of a package, recursively.
+    // Once all dependencies are fetched, `zig build` no longer requires
+    // internet connectivity.
+    .dependencies = .{
+        .parg = .{
+            .url = "https://github.com/judofyr/parg/archive/8c4af60afdb3ad211ad12cd329c2859f8593af19.tar.gz",
+            .hash = "parg-0.0.0-dOPWZENZAAAAyp9Lz-4zKPZ8PD7DEwUCEsiw6Y1UR_bA",
+            .lazy = true,
+        },
+    },
+    .paths = .{
+        "build.zig",
+        "build.zig.zon",
+        "src",
+        "LICENSE.txt",
+        "README.md",
+    },
+}
