@@ -1,6 +1,22 @@
 const F32 = 1.0 / 4294967296.0;
 const F64 = 1.0 / 18446744073709551616.0;
 
+pub fn rotl32(x: u32, k: u5) u32 {
+    return (x << k) | (x >> @truncate(32 - @as(u6, k)));
+}
+
+pub fn rotr32(x: u32, k: u5) u32 {
+    return (x >> k) | (x << @truncate(32 - @as(u6, k)));
+}
+
+pub fn rotl64(x: u64, k: u64) u64 {
+    return (x << k) | (x >> (64 - k));
+}
+
+pub fn rotr64(x: u64, k: u64) u64 {
+    return (x >> k) | (x << (64 - k));
+}
+
 pub fn cvtu32_uf(x: u32) f32 {
     const f: f32 = @floatFromInt(x);
     return f * F32;
