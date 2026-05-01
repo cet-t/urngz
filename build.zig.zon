@@ -36,6 +36,10 @@
             .url = "https://github.com/judofyr/spice/archive/refs/heads/main.tar.gz",
             .hash = "spice-0.0.0-3FtxfKu_AADWhWk0I60jjBhn7y-d3K_49oefAeOWwx_S",
         },
+        .clap = .{
+            .url = "git+https://github.com/Hejsil/zig-clap#8d97efa1ee1e575443c7888d5c38e1c3fc145cf5",
+            .hash = "clap-0.12.0-oBajB7foAQDqlSwaSG5g0yq7xGbQARUsBk5T64gAOqP5",
+        },
     },
     .paths = .{
         "build.zig",
