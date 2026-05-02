@@ -1,9 +1,11 @@
 const urng = @import("./prelude.zig");
 const _internal = @import("./_internal.zig");
 
+const u32x16 = _internal.u32x16;
+const f32x16 = _internal.f32x16;
 const sg = urng.splitmix.SplitMix32;
 
-/// A SFC32 pseudo-random number generator.
+/// Small Fast Chaotic Implementation.
 ///
 /// # Examples
 ///
@@ -27,7 +29,7 @@ pub const Sfc32 = struct {
     pub fn nextu(self: *Sfc32) u32 {
         const tmp = self.a +% self.b +% self.counter;
 
-        self.counter += 1;
+        self.counter +%= 1;
         self.a = self.b ^ (self.b >> 9);
         self.b = self.c +% (self.c << 3);
         self.c = _internal.rotl32(self.c, 21);
@@ -50,20 +52,19 @@ pub const Sfc32 = struct {
 };
 
 const sfc32x16_size = 16;
-const sfc32x16_t = [sfc32x16_size]u32;
 
 pub const Sfc32x16 = struct {
-    a: sfc32x16_t,
-    b: sfc32x16_t,
-    c: sfc32x16_t,
-    counter: sfc32x16_t,
+    a: u32x16,
+    b: u32x16,
+    c: u32x16,
+    counter: u32x16,
 
     pub fn new(seed: u32) Sfc32x16 {
         var seedgen = sg.new(seed);
-        var a: sfc32x16_t = undefined;
-        var b: sfc32x16_t = undefined;
-        var c: sfc32x16_t = undefined;
-        var counter: sfc32x16_t = undefined;
+        var a: [sfc32x16_size]u32 = undefined;
+        var b: [sfc32x16_size]u32 = undefined;
+        var c: [sfc32x16_size]u32 = undefined;
+        var counter: [sfc32x16_size]u32 = undefined;
         for (0..sfc32x16_size) |i| {
             a[i] = seedgen.nextu();
             b[i] = seedgen.nextu();
@@ -73,27 +74,20 @@ pub const Sfc32x16 = struct {
         return Sfc32x16{ .a = a, .b = b, .c = c, .counter = counter };
     }
 
-    pub fn nextu(self: *Sfc32x16) sfc32x16_t {
-        var tmp: sfc32x16_t = undefined;
-        inline for (0..sfc32x16_size) |i| {
-            tmp[i] = self.a[i] +% self.b[i] +% self.counter[i];
-
-            self.counter[i] +%= 1;
-            self.a[i] = self.b[i] ^ (self.b[i] >> 9);
-            self.b[i] = self.c[i] +% (self.c[i] << 3);
-            self.c[i] = _internal.rotl32(self.c[i], 21);
-            self.c[i] +%= tmp[i];
-        }
-        return tmp;
+    pub fn nextu(self: *Sfc32x16) [sfc32x16_size]u32 {
+        const tmp = self.a +% self.b +% self.counter;
+        self.counter +%= @splat(1);
+        self.a = self.b ^ (self.b >> @splat(9));
+        self.b = self.c +% (self.c << @splat(3));
+        self.c = (self.c << @splat(21)) | (self.c >> @splat(11));
+        self.c +%= tmp;
+        return @bitCast(tmp);
     }
 
     pub fn nextf(self: *Sfc32x16) [sfc32x16_size]f32 {
-        var res: [sfc32x16_size]f32 = undefined;
-        const v = self.nextu();
-        inline for (0..sfc32x16_size) |i| {
-            res[i] = _internal.cvtu32_uf(v[i]);
-        }
-        return res;
+        const v: u32x16 = @bitCast(self.nextu());
+        const f: f32x16 = @floatFromInt(v);
+        return @bitCast(f * @as(f32x16, @splat(1.0 / 4294967296.0)));
     }
 
     pub fn randi(self: *Sfc32x16, min: i32, max: i32) [sfc32x16_size]i32 {
@@ -106,11 +100,8 @@ pub const Sfc32x16 = struct {
     }
 
     pub fn randf(self: *Sfc32x16, min: f32, max: f32) [sfc32x16_size]f32 {
-        var res: [sfc32x16_size]f32 = undefined;
-        const v = self.nextu();
-        inline for (0..sfc32x16_size) |i| {
-            res[i] = _internal.cvtr32_uf(v[i], min, max);
-        }
-        return res;
+        const v: u32x16 = @bitCast(self.nextu());
+        const f: f32x16 = @floatFromInt(v);
+        return @bitCast(f * @as(f32x16, @splat(1.0 / 4294967296.0)) * @as(f32x16, @splat(max - min)) + @as(f32x16, @splat(min)));
     }
 };

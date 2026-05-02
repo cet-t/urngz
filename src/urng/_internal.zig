@@ -1,3 +1,27 @@
+pub const u32x4 = @Vector(4, u32);
+pub const u32x8 = @Vector(8, u32);
+pub const u32x16 = @Vector(16, u32);
+
+pub const i32x4 = @Vector(4, i32);
+pub const i32x8 = @Vector(8, i32);
+pub const i32x16 = @Vector(16, i32);
+
+pub const f32x4 = @Vector(4, f32);
+pub const f32x8 = @Vector(8, f32);
+pub const f32x16 = @Vector(16, f32);
+
+pub const u64x2 = @Vector(2, u64);
+pub const u64x4 = @Vector(4, u64);
+pub const u64x8 = @Vector(8, u64);
+
+pub const i64x2 = @Vector(2, i64);
+pub const i64x4 = @Vector(4, i64);
+pub const i64x8 = @Vector(8, i64);
+
+pub const f64x2 = @Vector(2, f64);
+pub const f64x4 = @Vector(4, f64);
+pub const f64x8 = @Vector(8, f64);
+
 const F32 = 1.0 / 4294967296.0;
 const F64 = 1.0 / 18446744073709551616.0;
 
@@ -24,7 +48,7 @@ pub fn cvtu32_uf(x: u32) f32 {
 
 pub fn cvtr32_ui(x: u32, min: i32, max: i32) i32 {
     const range = @as(i64, max) - @as(i64, min) + 1;
-    return @as(i32, (@as(i64, x) * range) >> 32) + min;
+    return @as(i32, @intCast((@as(i64, x) * range) >> 32)) + min;
 }
 
 pub fn cvtr32_uf(x: u32, min: f32, max: f32) f32 {

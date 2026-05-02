@@ -83,11 +83,56 @@ pub fn build(b: *std.Build) void {
         }),
     });
 
+    const cabi = b.addLibrary(.{
+        .linkage = .dynamic,
+        .name = "urngz_cabi",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/cabi.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+
+    const cabi_bench = b.addExecutable(.{
+        .name = "urngz_cabi_bench",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/cabi_bench.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+
     // This declares intent for the executable to be installed into the
     // install prefix when running `zig build` (i.e. when executing the default
     // step). By default the install prefix is `zig-out/` but can be overridden
     // by passing `--prefix` or `-p`.
     b.installArtifact(exe);
+
+    const install_cabi = b.addInstallArtifact(cabi, .{});
+    const install_cabi_header = b.addInstallHeaderFile(b.path("include/urngz_cabi.h"), "urngz_cabi.h");
+    const cabi_step = b.step("cabi", "Build the C ABI shared library");
+    cabi_step.dependOn(&install_cabi.step);
+    cabi_step.dependOn(&install_cabi_header.step);
+
+    const dll_step = b.step("dll", "Build the C ABI DLL");
+    dll_step.dependOn(&install_cabi.step);
+    dll_step.dependOn(&install_cabi_header.step);
+
+    const csbindgen_cmd = b.addSystemCommand(&.{
+        "cargo",
+        "run",
+        "--manifest-path",
+        "tools/csbindgen/Cargo.toml",
+        "--quiet",
+    });
+    csbindgen_cmd.setEnvironmentVariable("CARGO_TARGET_DIR", ".zig-cache/cargo-csbindgen");
+
+    const csbindgen_step = b.step("csbindgen", "Generate C# FFI bindings via csbindgen");
+    csbindgen_step.dependOn(&csbindgen_cmd.step);
+
+    const bench_step = b.step("bench-cabi", "Run the C ABI throughput benchmark");
+    const run_cabi_bench = b.addRunArtifact(cabi_bench);
+    bench_step.dependOn(&run_cabi_bench.step);
 
     // This creates a top level step. Top level steps have a name and can be
     // invoked by name when running `zig build` (e.g. `zig build run`).
@@ -135,12 +180,23 @@ pub fn build(b: *std.Build) void {
     // A run step that will run the second test executable.
     const run_exe_tests = b.addRunArtifact(exe_tests);
 
+    const cabi_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/cabi.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+
+    const run_cabi_tests = b.addRunArtifact(cabi_tests);
+
     // A top level step for running all tests. dependOn can be called multiple
     // times and since the two run steps do not depend on one another, this will
     // make the two of them run in parallel.
     const test_step = b.step("test", "Run tests");
     test_step.dependOn(&run_mod_tests.step);
     test_step.dependOn(&run_exe_tests.step);
+    test_step.dependOn(&run_cabi_tests.step);
 
     // Just like flags, top level steps are also listed in the `--help` menu.
     //
