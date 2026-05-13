@@ -4,6 +4,7 @@ const cabi_jsf = @import("./cabi/jsf.zig");
 const cabi_pcg = @import("./cabi/pcg.zig");
 const cabi_sfc = @import("./cabi/sfc.zig");
 const cabi_xoshiro = @import("./cabi/xoshiro.zig");
+const cabi_squares = @import("./cabi/squares.zig");
 const urng = @import("./urng/prelude.zig");
 
 extern "kernel32" fn QueryPerformanceCounter(out: *i64) callconv(.winapi) bool;
@@ -99,20 +100,28 @@ pub fn main() !void {
     benchNextu(urng.Pcg32, "Pcg32", 1, iters);
     benchNextu(urng.Jsf32, "Jsf32", 1, iters);
     benchNextu(urng.Xoshiro128Pp, "Xoshiro128++", 1, iters);
+    benchNextu(urng.Squares32, "Squares32", 1, iters);
 
     std.debug.print("\nVectorized PRNGs (u32xN output)\n", .{});
     benchNextu(urng.Sfc32x16, "Sfc32x16", 1, iters / 16);
     benchNextu(urng.Pcg32x8, "Pcg32x8", 1, iters / 8);
     benchNextu(urng.Jsf32x16, "Jsf32x16", 1, iters / 16);
     benchNextu(urng.Xoshiro128Ppx16, "Xoshiro128++x16", 1, iters / 16);
+    benchNextu(urng.Squares32x8, "Squares32x8", 1, iters / 8);
+    benchNextu(urng.Squares32x16, "Squares32x16", 1, iters / 16);
+    benchNextu(urng.Squares32x64, "Squares32x64", 1, iters / 64);
 
     std.debug.print("\nC ABI PRNGs (buffered u32 output)\n", .{});
     try benchCabiNextu(cabi_sfc.sfc32_new, cabi_sfc.sfc32_free, cabi_sfc.sfc32_nextu, "Sfc32", @as(u32, 1));
     try benchCabiNextu(cabi_pcg.pcg32_new, cabi_pcg.pcg32_free, cabi_pcg.pcg32_nextu, "Pcg32", @as(u64, 1));
     try benchCabiNextu(cabi_jsf.jsf32_new, cabi_jsf.jsf32_free, cabi_jsf.jsf32_nextu, "Jsf32", @as(u32, 1));
     try benchCabiNextu(cabi_xoshiro.xoshiro128pp_new, cabi_xoshiro.xoshiro128pp_free, cabi_xoshiro.xoshiro128pp_nextu, "Xoshiro128++", @as(u32, 1));
+    try benchCabiNextu(cabi_squares.squares32_new, cabi_squares.squares32_free, cabi_squares.squares32_nextu, "Squares32", @as(u32, 1));
     try benchCabiNextu(cabi_sfc.sfc32x16_new, cabi_sfc.sfc32x16_free, cabi_sfc.sfc32x16_nextu, "Sfc32x16", @as(u32, 1));
     try benchCabiNextu(cabi_pcg.pcg32x8_new, cabi_pcg.pcg32x8_free, cabi_pcg.pcg32x8_nextu, "Pcg32x8", @as(u64, 1));
     try benchCabiNextu(cabi_jsf.jsf32x16_new, cabi_jsf.jsf32x16_free, cabi_jsf.jsf32x16_nextu, "Jsf32x16", @as(u32, 1));
     try benchCabiNextu(cabi_xoshiro.xoshiro128ppx16_new, cabi_xoshiro.xoshiro128ppx16_free, cabi_xoshiro.xoshiro128ppx16_nextu, "Xoshiro128++x16", @as(u32, 1));
+    try benchCabiNextu(cabi_squares.squares32x8_new, cabi_squares.squares32x8_free, cabi_squares.squares32x8_nextu, "Squares32x8", @as(u32, 1));
+    try benchCabiNextu(cabi_squares.squares32x16_new, cabi_squares.squares32x16_free, cabi_squares.squares32x16_nextu, "Squares32x16", @as(u32, 1));
+    try benchCabiNextu(cabi_squares.squares32x64_new, cabi_squares.squares32x64_free, cabi_squares.squares32x64_nextu, "Squares32x64", @as(u32, 1));
 }

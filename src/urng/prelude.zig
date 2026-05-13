@@ -31,3 +31,10 @@ pub const Xoshiro128Ss = xoshiro.Xoshiro128Ss;
 pub const Xoshiro128Ssx16 = xoshiro.Xoshiro128Ssx16;
 pub const Xoshiro128Pp = xoshiro.Xoshiro128Pp;
 pub const Xoshiro128Ppx16 = xoshiro.Xoshiro128Ppx16;
+
+/// Squares implementations.
+pub const squares = @import("./squares.zig");
+pub const Squares32 = squares.Squares32;
+pub const Squares32x8 = squares.Squares32x8;
+pub const Squares32x16 = squares.Squares32x16;
+pub const Squares32x64 = squares.Squares32x64;
